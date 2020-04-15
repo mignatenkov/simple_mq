@@ -13,7 +13,7 @@ public class MainApp {
 
     public static final String QUEUE_NAME = "TEST_QUEUE_1";
     public static final String TCP_ACTIVEMQ_ADDR = "tcp://localhost:61617";
-    public static final String VM_ACTIVEMQ_ADDR = "vm://localhost:61616";
+    public static final String VM_ACTIVEMQ_ADDR = "vm://vmBroker";
 
     public static void main(String[] args) throws Exception {
         log.info("This is a simple ActiveMQ test!");
