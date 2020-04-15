@@ -1,16 +1,18 @@
 package com.korfax.simple_mq.consumer;
 
 import com.korfax.simple_mq.MainApp;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
 
+@Slf4j
 public class MQConsumer implements ExceptionListener {
 
-    public void consume() {
+    public void consume(String brokerAddr, int sessionType) {
         try {
             // Create a ConnectionFactory
-            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(MainApp.ACTIVEMQ_ADDR);
+            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerAddr);
 
             // Create a Connection
             Connection connection = connectionFactory.createConnection();
@@ -19,7 +21,7 @@ public class MQConsumer implements ExceptionListener {
             connection.setExceptionListener(this);
 
             // Create a Session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Session session = connection.createSession(sessionType == Session.SESSION_TRANSACTED, sessionType);
 
             // Create the destination (Topic or Queue)
             Destination destination = session.createQueue(MainApp.QUEUE_NAME);
@@ -28,27 +30,26 @@ public class MQConsumer implements ExceptionListener {
             MessageConsumer consumer = session.createConsumer(destination);
 
             // Wait for a message
-            Message message = consumer.receive(1000);
+            Message message = consumer.receive(2000);
 
             if (message instanceof TextMessage) {
                 TextMessage textMessage = (TextMessage) message;
                 String text = textMessage.getText();
-                System.out.println("Received: " + text);
+                log.info("Received: " + text);
             } else {
-                System.out.println("Received: " + message);
+                log.info("Received non text msg: " + message);
             }
 
             consumer.close();
             session.close();
             connection.close();
         } catch (Exception e) {
-            System.out.println("Caught: " + e);
-            e.printStackTrace();
+            log.error("Caught: " + e);
         }
     }
 
     public void onException(JMSException e) {
-        System.out.println("JMS Exception occured. Shutting down client.");
+        log.error("JMS Exception occured. Shutting down client.");
     }
 
 }
