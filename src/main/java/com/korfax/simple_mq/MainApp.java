@@ -16,9 +16,6 @@ public class MainApp {
     public static final String VM_ACTIVEMQ_ADDR = "vm://vmBroker";
 
     public static void main(String[] args) throws Exception {
-        log.info("This is a simple ActiveMQ test!");
-        log.info("===============================");
-
         useBroker(TCP_ACTIVEMQ_ADDR, "tcpBroker");
         Thread.sleep(4000);
         useBroker(VM_ACTIVEMQ_ADDR, "vmBroker");
@@ -36,21 +33,23 @@ public class MainApp {
         MQConsumer mqConsumer = new MQConsumer();
         String msg = "Hello from thread " + Thread.currentThread().getName();
 
-        mqProducer.produce(addr, msg, Session.AUTO_ACKNOWLEDGE, DeliveryMode.NON_PERSISTENT);
-        mqConsumer.consume(addr, Session.AUTO_ACKNOWLEDGE);
-        log.info("-------------------------------");
-
-        mqProducer.produce(addr, msg, Session.SESSION_TRANSACTED, DeliveryMode.NON_PERSISTENT);
-        mqConsumer.consume(addr, Session.SESSION_TRANSACTED);
-        log.info("-------------------------------");
-
-        mqProducer.produce(addr, msg, Session.AUTO_ACKNOWLEDGE, DeliveryMode.PERSISTENT);
-        mqConsumer.consume(addr, Session.AUTO_ACKNOWLEDGE);
-        log.info("-------------------------------");
-
-        mqProducer.produce(addr, msg, Session.SESSION_TRANSACTED, DeliveryMode.PERSISTENT);
-        mqConsumer.consume(addr, Session.SESSION_TRANSACTED);
-        log.info("===============================");
+        for (int dm = 1; dm <= 2; dm++) {
+            // NON_PERSISTENT = 1
+            // PERSISTENT = 2
+            for (int st = 0; st <= 3; st++) {
+                // SESSION_TRANSACTED = 0
+                // AUTO_ACKNOWLEDGE = 1
+                // CLIENT_ACKNOWLEDGE = 2
+                // DUPS_OK_ACKNOWLEDGE = 3
+                log.info("SessionType = "+st+", DeliveryMode = "+dm);
+                long start = System.currentTimeMillis();
+                mqProducer.produce(addr, msg, st, dm);
+                mqConsumer.consume(addr, st);
+//                mqConsumer.consume(addr, st);
+                log.info("Time: " + (System.currentTimeMillis() - start) + "ms");
+                log.info("-------------------------------");
+            }
+        }
 
         broker.stopBroker();
     }

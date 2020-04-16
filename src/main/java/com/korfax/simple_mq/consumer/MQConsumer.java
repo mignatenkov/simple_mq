@@ -30,7 +30,7 @@ public class MQConsumer implements ExceptionListener {
             MessageConsumer consumer = session.createConsumer(destination);
 
             // Wait for a message
-            Message message = consumer.receive(2000);
+            Message message = consumer.receive();
 
             if (message instanceof TextMessage) {
                 TextMessage textMessage = (TextMessage) message;
@@ -38,6 +38,10 @@ public class MQConsumer implements ExceptionListener {
                 log.info("Received: " + text);
             } else {
                 log.info("Received non text msg: " + message);
+            }
+
+            if (sessionType > Session.SESSION_TRANSACTED) {
+                message.acknowledge();
             }
 
             consumer.close();
