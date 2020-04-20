@@ -43,7 +43,9 @@ public class MQConsumer implements ExceptionListener {
             if (sessionType > Session.SESSION_TRANSACTED) {
                 message.acknowledge();
             }
-
+            if (sessionType == Session.SESSION_TRANSACTED) {
+                session.commit();
+            }
             consumer.close();
             session.close();
             connection.close();
